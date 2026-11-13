@@ -1,0 +1,196 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>SELFTEST</title>
+<style>body{background:#111;color:#0f0;font:12px monospace;padding:10px}pre{white-space:pre-wrap}</style>
+</head>
+<body>
+<div id="app"></div>
+<pre id="out">running…</pre>
+<script src="js/data-campaign.js"></script>
+<script src="js/data-gov.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/audio.js"></script><script src="js/ui.js"></script>
+<script>
+window.onerror = function (m, s, l) {
+  var p = document.getElementById('out');
+  p.textContent = 'ERRO DE SCRIPT: ' + m + ' em ' + s + ':' + l;
+  return false;
+};
+(function () {
+  var lines = [], fail = 0;
+  function log(s) { lines.push(s); }
+  function ok(cond, msg) { if (!cond) { fail++; log('FAIL  ' + msg); } }
+  function num(v) { return typeof v === 'number' && isFinite(v); }
+
+  /* ---------- 1. campanha ---------- */
+  var outcomes = { win_first: 0, runoff: 0, lost: 0 };
+  var finalShares = [], nanFail = 0;
+  for (var i = 0; i < 300; i++) {
+    var pi = i % PARTIES.length, bi = i % BACKGROUNDS.length;
+    Game.setup('T' + i, PARTIES[pi].id, BACKGROUNDS[bi].id);
+    var S = Game.state();
+    ok(num(Game.national()), 'national NaN na campanha ' + i);
+    var guard = 0;
+    while (S.camp.week <= 6 && guard++ < 100) {
+      while (S.camp.pa > 0) {
+        var pick = Math.floor(Math.random() * 4);
+        if (pick === 0) Game.doDebate(Game.nextDebate(), Math.floor(Math.random() * 3));
+        else if (pick === 1) Game.doComicio(STATES[Math.floor(Math.random() * STATES.length)].uf);
+        else if (pick === 2) Game.doMarketing(Math.floor(Math.random() * 3));
+        else Game.doAlly(PARTIES[Math.floor(Math.random() * PARTIES.length)].id);
+      }
+      var ev = Game.maybeEvent();
+      if (ev) Game.resolveEvent(Math.floor(Math.random() * ev.ev.opts.length));
+      if (S.camp.week <= 6) Game.endWeek();
+    }
+    var e = Game.election();
+    outcomes[e.outcome]++;
+    finalShares.push(e.player);
+    if (!num(e.player)) nanFail++;
+    ok(e.player >= 0 && e.player <= 100, 'share fora de faixa: ' + e.player);
+    ok(e.rank >= 1 && e.rank <= 6, 'rank inválido: ' + e.rank);
+  }
+  var avgShare = finalShares.reduce(function (a, b) { return a + b; }, 0) / finalShares.length;
+  log('CAMPANHA 300 runs — 1ºturno:' + outcomes.win_first + '  2ºturno:' + outcomes.runoff + '  derrota:' + outcomes.lost + '  média share:' + avgShare.toFixed(1) + '%');
+
+  /* ---------- 2. governo ---------- */
+  var stats = { impeach: 0, end: 0, popSum: 0, debtSum: 0, inflSum: 0, unempSum: 0, notaSum: 0, crash: 0 };
+  for (var j = 0; j < 300; j++) {
+    Game.setup('G' + j, PARTIES[j % PARTIES.length].id, BACKGROUNDS[j % BACKGROUNDS.length].id);
+    var e2 = Game.election();
+    Game.state().elec = e2;
+    Game.startGov(true);
+    var g = Game.state().gov;
+    var guard2 = 0, done = false;
+    while (!done && guard2++ < 40) {
+      /* orçamento aleatório dentro do limite */
+      for (var t = 0; t < 5; t++) {
+        var mid = MINISTRIES[Math.floor(Math.random() * 5)].id;
+        Game.adjustBudget(mid, Math.random() < 0.5 ? -2 : 2);
+      }
+      var d = Game.currentDecision();
+      var opt = Math.floor(Math.random() * d.ev.opts.length);
+      var res = Game.decide(opt, Math.floor(Math.random() * 50));
+      if (!res.ok) { stats.crash++; break; }
+      var nx = Game.nextQuarter();
+      if (!num(g.pop) || !num(g.infl) || !num(g.unemp) || !num(g.debt) || !num(g.cash)) {
+        stats.crash++; log('FAIL NaN nos indicadores run ' + j); break;
+      }
+      if (nx.impeachment) { stats.impeach++; done = true; }
+      else if (nx.ended) { stats.end++; done = true; }
+    }
+    if (!done) { stats.crash++; }
+    stats.popSum += g.pop; stats.debtSum += g.debt; stats.inflSum += g.infl;
+    stats.unempSum += g.unemp; stats.notaSum += Game.score('fim').nota;
+  }
+  log('GOVERNO 300 runs — fim de mandato:' + stats.end + '  impeachment:' + stats.impeach + '  travados:' + stats.crash);
+  log('  médias finais → pop ' + (stats.popSum / 300).toFixed(1) + '% | infl ' + (stats.inflSum / 300).toFixed(1)
+    + '% | desemp ' + (stats.unempSum / 300).toFixed(1) + '% | dívida ' + (stats.debtSum / 300).toFixed(1)
+    + '% | nota ' + (stats.notaSum / 300).toFixed(1));
+
+  /* ---------- 2b. bots de habilidade ---------- */
+  var goodPop = 0, goodImpeach = 0, goodNota = 0, goodEnd = 0;
+  for (var b2 = 0; b2 < 120; b2++) {
+    Game.setup('B' + b2, PARTIES[b2 % PARTIES.length].id, BACKGROUNDS[b2 % BACKGROUNDS.length].id);
+    Game.election();
+    Game.startGov(true);
+    var gb = Game.state().gov, gd = 0, bdone = false;
+    while (!bdone && gd++ < 40) {
+      /* bot "popular": escolhe a opção com maior efeito de popularidade */
+      var dv = Game.currentDecision();
+      var bestI = 0, bestV = -999;
+      for (var oi = 0; oi < dv.ev.opts.length; oi++) {
+        var eff = dv.ev.opts[oi].e || {};
+        var v = (eff.pop || 0) - Math.abs(eff.infl || 0) * 2 - Math.abs(eff.debt || 0) * 1.5;
+        if (v > bestV) { bestV = v; bestI = oi; }
+      }
+      Game.decide(bestI, 20);
+      var nxb = Game.nextQuarter();
+      if (nxb.impeachment) { goodImpeach++; bdone = true; }
+      else if (nxb.ended) { goodEnd++; bdone = true; }
+    }
+    goodPop += gb.pop; goodNota += Game.score('fim').nota;
+  }
+  log('BOT POPULAR 120 runs — mandato completo:' + goodEnd + '  impeachment:' + goodImpeach
+    + '  pop média final ' + (goodPop / 120).toFixed(1) + '%  nota ' + (goodNota / 120).toFixed(1));
+
+  var gs2 = [], gw = 0;
+  for (var b3 = 0; b3 < 60; b3++) {
+    Game.setup('S' + b3, PARTIES[b3 % PARTIES.length].id, BACKGROUNDS[b3 % BACKGROUNDS.length].id);
+    var S3 = Game.state(), gd3 = 0;
+    while (S3.camp.week <= 6 && gd3++ < 60) {
+      while (S3.camp.pa > 0) {
+        var nat0 = Game.national();
+        var bestA = -1, bestV2 = -99, bestI2 = -1;
+        for (var a2 = 0; a2 < 3; a2++) {
+          var gq = DEBATES[Game.nextDebate()].opts[a2].g, s2 = 0;
+          for (var q2 in GROUP_WEIGHT) s2 += (gq[q2] || 0) * GROUP_WEIGHT[q2];
+          if (s2 > bestV2) { bestV2 = s2; bestI2 = a2; }
+        }
+        Game.doDebate(Game.nextDebate(), bestI2);
+        var ev3 = Game.maybeEvent();
+        if (ev3) Game.resolveEvent(0);
+      }
+      if (S3.camp.week <= 6) Game.endWeek();
+    }
+    var e3 = Game.election();
+    gs2.push(e3.player);
+    if (e3.outcome === 'win_first') gw++;
+  }
+  log('BOT CAMPANHA (só debates ótimos) — média share:' + (gs2.reduce(function (a, b) { return a + b; }, 0) / 60).toFixed(1) + '%  1ºturno:' + gw + '/60');
+  /* ---------- 3. Congresso ---------- */
+  Game.setup('C', 'mst', 'gov');
+  Game.startGov(true);
+  var v0 = Game.voteBill('pec', 0), v1 = Game.voteBill('pec', 60), v2 = Game.voteBill('pl', 0);
+  log('CONGRESSO — PEC sem capital:' + v0.seats + '  PEC com 60 cap:' + v1.seats + '  PL sem capital:' + v2.seats);
+  ok(v1.seats >= v0.seats, 'capital não aumentou votos');
+
+  /* ---------- 4. UI smoke ---------- */
+  UI.start();
+  Game.wipe();
+  Game.setup('UI Teste', 'fst', 'gov');
+  var screens = ['menu', 'ajuda', 'setup', 'hq', 'debate', 'comicio', 'marketing', 'ally'];
+  for (var s = 0; s < screens.length; s++) {
+    UI.go(screens[s]);
+    var html = document.getElementById('app').innerHTML;
+    ok(html.length > 200, 'tela vazia: ' + screens[s]);
+    ok(html.indexOf('NaN') < 0, 'NaN na tela: ' + screens[s]);
+    ok(html.indexOf('undefined') < 0, 'undefined na tela: ' + screens[s]);
+  }
+  /* clique real no debate */
+  UI.go('hq');
+  var tile = document.querySelector('[data-act="goDebate"]');
+  ok(!!tile, 'tile de debate ausente');
+  tile.click();
+  var opt = document.querySelector('[data-act="answer"]');
+  ok(!!opt, 'opções de resposta ausentes');
+  opt.click();
+  ok(document.querySelector('[data-act="endWeek"]') !== null, 'não voltou para a HQ após responder');
+
+  UI.go('hq');
+  var ew = document.querySelector('[data-act="endWeek"]');
+  ew.click();
+  var app = document.getElementById('app').innerHTML;
+  ok(app.length > 100, 'tela em branco após encerrar semana');
+
+  /* governo via UI */
+  Game.startGov(true);
+  var gs = ['gov', 'budget', 'decision'];
+  for (var k = 0; k < gs.length; k++) {
+    UI.go(gs[k]);
+    var h = document.getElementById('app').innerHTML;
+    ok(h.length > 200, 'tela gov vazia: ' + gs[k]);
+    ok(h.indexOf('NaN') < 0, 'NaN na tela gov: ' + gs[k]);
+  }
+
+  log('UI smoke: ' + screens.length + ' telas + clique no debate + governo');
+  log(fail === 0 ? 'RESULTADO: TODOS OS TESTES PASSARAM' : 'RESULTADO: ' + fail + ' FALHA(S)');
+  document.getElementById('out').textContent = lines.join('\n');
+  document.title = fail === 0 ? 'PASS' : 'FAIL-' + fail;
+})();
+</script>
+</body>
+</html>
+

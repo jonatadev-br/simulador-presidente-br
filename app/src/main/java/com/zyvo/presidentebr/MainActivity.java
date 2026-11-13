@@ -48,6 +48,11 @@ public class MainActivity extends Activity {
         web.setWebViewClient(new WebViewClient());
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);
         web.setVerticalScrollBarEnabled(false);
+        web.setHorizontalScrollBarEnabled(false);
+        web.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+        web.setFocusable(true);
+        web.setFocusableInTouchMode(true);
+        web.setNestedScrollingEnabled(true);
 
         setContentView(web);
         web.loadUrl("file:///android_asset/index.html");

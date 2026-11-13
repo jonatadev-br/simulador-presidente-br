@@ -26,6 +26,26 @@
     document.removeEventListener('touchstart', once);
   }, { passive: true });
 })();
+
+/* Rede de seguranca: se o WebView antigo ignorar o gesto de rolagem nativo,
+   este arrasto manual garante que a tela deslize mesmo assim. */
+(function () {
+  var y0 = null, sy0 = 0;
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) { y0 = null; return; }
+    y0 = e.touches[0].clientY; sy0 = window.pageYOffset;
+  }, { passive: true });
+  document.addEventListener('touchmove', function (e) {
+    if (y0 === null || e.touches.length !== 1) return;
+    var dy = y0 - e.touches[0].clientY;
+    if (Math.abs(dy) < 6) return;
+    if (Math.abs(window.pageYOffset - sy0) > 4) { y0 = null; return; } // nativo funcionou
+    window.scrollBy(0, dy);
+    y0 = e.touches[0].clientY; sy0 = window.pageYOffset;
+  }, { passive: true });
+  document.addEventListener('touchend', function () { y0 = null; }, { passive: true });
+  document.addEventListener('touchcancel', function () { y0 = null; }, { passive: true });
+})();
 </script>
 </body>
 </html>

@@ -1,0 +1,98 @@
+================================================================
+ SIMULADOR PRESIDENTE DO BRASIL  -  LEIAME
+ Versao 1.0  -  Android 8.0+  -  100% offline
+================================================================
+
+1. O QUE E O JOGO
+----------------------------------------------------------------
+Simulador de carreira politica em duas fases conectadas:
+
+  FASE 1 - CAMPANHA ELEITORAL
+    - 6 semanas, 2 pontos de acao por semana
+    - 5 partidos ficticios (esquerda, centro, centro-direita, direita)
+    - 5 origens politicas (governador, senador, empresario, lider
+      sindical, prefeito de capital) - mudam caixa inicial e apoio
+    - 4 grandes grupos de eleitores: trabalhadores, empresarios,
+      jovens e evangelicos
+    - 27 estados com peso eleitoral proprio
+    - 12 perguntas de debate, 20 eventos aleatorios de campanha
+    - Pesquisa semanal com margem de erro
+    - 1o turno e 2o turno (2 semanas de estrategia)
+
+  FASE 2 - GOVERNO
+    - 16 trimestres (4 anos)
+    - Indicadores permanentes: Popularidade, Inflacao, Desemprego,
+      Divida Publica (% do PIB), Caixa do Governo e Capital Politico
+    - 5 ministerios com orcamento e nivel de eficiencia (Saude,
+      Educacao, Infraestrutura, Seguranca, Meio Ambiente)
+    - 30 eventos e crises do cenario brasileiro
+    - Cada decisao entra como Decreto, Medida Provisoria, Projeto de
+      Lei ou PEC
+    - Congresso simulado com 513 cadeiras em 6 blocos:
+        PL  -> maioria simples (257 votos)
+        PEC -> 3/5 (308 votos)
+        MP  -> vale na hora, mas o Congresso ratifica
+        Decreto -> imediato, porem com desgaste institucional
+    - Negociacao com emendas: capital politico compra apoio
+      (o Centrao, com 145 cadeiras, cobra caro)
+    - Impeachment se a popularidade ficar abaixo de 15% por 3
+      trimestres seguidos, ou com 2 escandalos sem resposta e
+      popularidade baixa
+    - Com 55% ou mais no fim do mandato, disputa a reeleicao
+    - Nota final de 0 a 10 em Economia, Social e Instituicoes
+
+2. COMO INSTALAR O APK
+----------------------------------------------------------------
+  1. Abra o link de download no celular:
+       https://github.com/jonataprezende-commits/simulador-presidente-br/releases
+  2. Baixe o arquivo "app-debug.apk"
+  3. Ao abrir o arquivo, o Android vai pedir para permitir a instalacao
+     de fontes desconhecidas. Toque em "Configuracoes" e ative para o
+     seu navegador (ou gerenciador de arquivos).
+  4. Volte e toque em "Instalar".
+  5. Se aparecer aviso do Play Protect, toque em "Instalar mesmo assim".
+     (O APK e de depuracao, nao assinado por loja - o aviso e esperado.)
+
+  Requisitos: Android 8.0 (API 26) ou superior. Nao precisa de internet.
+
+3. CONTROLES
+----------------------------------------------------------------
+  - 100% toque, em modo retrato (vertical)
+  - Botao voltar do Android volta para a tela anterior do jogo
+  - Menu (icone de tres linhas) salva o progresso e volta ao inicio
+  - O jogo salva sozinho ao sair
+
+4. DICAS DE JOGO
+----------------------------------------------------------------
+  - Campanha: dinheiro curto no inicio. Marketing nacional rende mais,
+    mas o comicio em estado grande (SP, MG, RJ) rende mais por real.
+  - Debate que agrada um grupo costuma afastar outro. Escolha a coalizao
+    que fecha a conta: 38% sao trabalhadores, 26% evangelicos,
+    20% jovens e 16% empresarios.
+  - Governo: inflacao e desemprego derrubam popularidade mais rapido do
+    que qualquer escandalo. Nao deixe a inflacao passar de 6%.
+  - PECs exigem capital politico. Chegue ao plenario com 60+ e
+    popularidade alta.
+  - Escandalo sem resposta e bomba-relogio: dois deles com popularidade
+    baixa abrem o impeachment.
+
+5. AVISO DE FICCAO
+----------------------------------------------------------------
+Todos os partidos, adversarios, personagens, manchetes e eventos sao
+ficticios. Nenhuma pessoa ou agremiacao real e retratada. O jogo nao
+emite juizo sobre a politica real.
+
+6. INFORMACOES TECNICAS
+----------------------------------------------------------------
+  Pacote:     com.zyvo.presidentebr
+  Versao:     1.0 (versionCode 1)
+  Min SDK:    26 (Android 8.0)
+  Permissoes: apenas VIBRATE (nao acessa internet, camera ou contatos)
+  Motor:      HTML/CSS/JS embarcados em WebView, sem dependencia externa
+  Audio:      sintetizado em tempo real (nenhum arquivo de midia)
+  Tamanho:    ~2 MB
+
+  Codigo-fonte: https://github.com/jonataprezende-commits/simulador-presidente-br
+  O jogo roda no navegador tambem: abra app/src/main/assets/index.html
+  Teste automatizado: app/src/main/assets/selftest.html
+================================================================

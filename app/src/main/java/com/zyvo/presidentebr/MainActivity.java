@@ -37,6 +37,13 @@ public class MainActivity extends Activity {
         s.setDisplayZoomControls(false);
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        // rolagem mais fluida: sem reescala de texto/viewport e pre-raster fora da tela
+        s.setTextZoom(100);
+        s.setUseWideViewPort(false);
+        s.setLoadWithOverviewMode(false);
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
+            s.setOffscreenPreRaster(true);
+        }
 
         web.setWebViewClient(new WebViewClient());
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);

@@ -8,13 +8,28 @@ android {
         applicationId 'com.zyvo.presidentebr'
         minSdk 26
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
+    }
+
+    signingConfigs {
+        if (file('release.p12').exists()) {
+            release {
+                storeFile file('release.p12')
+                storeType 'PKCS12'
+                storePassword 'zyvoPresi2026'
+                keyAlias 'zyvo'
+                keyPassword 'zyvoPresi2026'
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            if (file('release.p12').exists()) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 

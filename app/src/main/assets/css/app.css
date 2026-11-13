@@ -9,11 +9,17 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}
 body{
-  background:radial-gradient(120% 90% at 50% 0%,#123047 0%,var(--bg) 55%) fixed;
+  /* gradient estatico: 'background-attachment:fixed' repinta a tela a cada frame e trava a rolagem no WebView */
+  background-color:var(--bg);
+  background-image:radial-gradient(120% 70vh at 50% 0%,#123047 0%,var(--bg) 100%);
+  background-repeat:no-repeat;
+  background-size:100% 100vh;
   color:var(--text);
   font:400 15px/1.45 "Segoe UI",Roboto,system-ui,-apple-system,sans-serif;
   min-height:100vh;overscroll-behavior:none;
   -webkit-user-select:none;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  overflow-anchor:none;
 }
 #app{width:100%;max-width:520px;margin:0 auto;padding:14px 14px 28px;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
 

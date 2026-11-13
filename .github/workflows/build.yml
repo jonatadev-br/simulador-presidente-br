@@ -17,19 +17,26 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v3
-      - name: Build debug APK
-        run: gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Restaurar keystore de release
+        run: echo "$KEYSTORE_B64" | base64 -d > app/release.p12
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+
+      - name: Build APK assinado
+        run: gradle assembleRelease --no-daemon
+
       - uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: app-release
+          path: app/build/outputs/apk/release/app-release.apk
+
       - name: Attach to release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: apk-${{ github.run_number }}
-          name: Simulador Presidente do Brasil v1.0
-          body: "APK Android (debug) do Simulador Presidente do Brasil. Baixe o arquivo abaixo e instale no celular."
-          files: app/build/outputs/apk/debug/app-debug.apk
+          tag_name: v1.0
+          name: Simulador Presidente do Brasil v1.1
+          body: "APK assinado (instala por cima das versoes anteriores). Baixe o arquivo abaixo e instale no celular."
+          files: app/build/outputs/apk/release/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

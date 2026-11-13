@@ -1,4 +1,4 @@
-plugins { id 'com.android.application' }
+﻿plugins { id 'com.android.application' }
 
 android {
     namespace 'com.zyvo.presidentebr'
@@ -25,5 +25,5 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.7.0'
+    /* sem dependencias externas: Activity nativa + WebView */
 }

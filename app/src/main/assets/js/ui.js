@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    INTERFACE — telas, navegação e interação
    ============================================================ */
 var UI = (function () {
@@ -389,6 +389,7 @@ var UI = (function () {
         + g.log.slice(-6).reverse().map(function (l) { return '<div class="log"><b>T' + l.q + '</b> ' + esc(l.t) + ' <span style="color:' + (l.ok ? '#3BD98F' : '#FF8589') + '">' + (l.ok ? '✓' : '✕') + '</span> — ' + esc(l.d) + '</div>'; }).join('')
         + '</div></div>' : '')
 
+      + (!g.log.length ? '<div class="card flat"><div class="overline">Como funciona o trimestre</div><div class="small muted" style="margin-top:6px">1. Distribua o orçamento · 2. Resolva a pauta do país · 3. Os indicadores reagem. Popularidade abaixo de 15% por 3 trimestres seguidos abre impeachment.</div></div>' : '')
       + '<div class="spacer"></div>'
       + '<button class="btn" data-act="goBudget">Governar o trimestre ' + g.q + '</button>'
     );

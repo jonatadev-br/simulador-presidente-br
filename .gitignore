@@ -1,6 +1,9 @@
 *.p12
 *.jks
 *.keystore
+*.apk
+*.aab
+*.log
 build/
 .gradle/
 local.properties

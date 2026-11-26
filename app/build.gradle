@@ -17,9 +17,9 @@ android {
             release {
                 storeFile file('release.p12')
                 storeType 'PKCS12'
-                storePassword 'zyvoPresi2026'
                 keyAlias 'zyvo'
-                keyPassword 'zyvoPresi2026'
+                storePassword System.getenv("STORE_PASSWORD") ?: ""
+                keyPassword System.getenv("KEY_PASSWORD") ?: ""
             }
         }
     }
